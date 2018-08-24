@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This library is meant to allow you to control access to your resources or MVC routes based on the model of NGINX.
+This library is meant to allow you to control access to your resources or MVC routes based on the leaky bucket model of NGINX.
 
 You can find more documentation on this abstraction on [this NGinx article](https://www.nginx.com/blog/rate-limiting-nginx/).
 
