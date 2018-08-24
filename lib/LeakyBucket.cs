@@ -19,7 +19,7 @@ namespace NicolasDorier.RateLimits
 
         public LeakyBucket(LimitRequestZone limitRequestZone, IDelay delay = null)
         {
-            if (limitRequestZone == null)
+            if(limitRequestZone == null)
                 throw new ArgumentNullException(nameof(limitRequestZone));
             LimitRequestZone = limitRequestZone;
             _delay = delay ?? TaskDelay.Instance;
@@ -36,32 +36,39 @@ namespace NicolasDorier.RateLimits
         public async Task<bool> Throttle()
         {
             TaskCompletionSource<bool> cts = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            while (true)
+            while(true)
             {
                 var usedSlots = _UsedSlots;
                 if(Interlocked.CompareExchange(ref usedSlots, usedSlots + 1, _Slots) == _Slots)
                     return false;
-                if (Interlocked.CompareExchange(ref _UsedSlots, usedSlots + 1, usedSlots) == usedSlots)
+                if(Interlocked.CompareExchange(ref _UsedSlots, usedSlots + 1, usedSlots) == usedSlots)
                     break;
             }
-            if (!_Queue.Writer.TryWrite(cts))
+            if(!_Queue.Writer.TryWrite(cts))
+            {
+                if(IsClosed)
+                {
+                    // If the bucket is closed, execute immediately
+                    return true;
+                }
                 throw new NotSupportedException("Bug in RateLimitQueue");
+            }
             await cts.Task;
             return true;
+
         }
 
         /// <summary>
         /// Drain the next drop from the bucket
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>A task completing only when the bucket is ready to leak the next drop.</returns>
-        public async Task DrainNext(CancellationToken cancellationToken = default)
+        /// <returns>A task completing only when the bucket is ready to leak the next drop. True if other drops are expected, false if the bucket is empty and close.</returns>
+        public async Task<bool> DrainNext()
         {
-            if (await _Queue.Reader.WaitToReadAsync(cancellationToken) &&
+            if(await _Queue.Reader.WaitToReadAsync() &&
                         _Queue.Reader.TryRead(out var req))
             {
                 req.TrySetResult(true);
-                if (!LimitRequestZone.NoDelay)
+                if(!LimitRequestZone.NoDelay)
                 {
                     await Wait();
                 }
@@ -77,6 +84,14 @@ namespace NicolasDorier.RateLimits
                     }
                 }
             }
+            return !IsClosed;
+        }
+
+        public bool IsClosed => _Queue.Reader.Completion.IsCompletedSuccessfully;
+
+        public void Close()
+        {
+            _Queue.Writer.TryComplete();
         }
 
         private async Task WaitAfter(Task currentWait)
@@ -102,7 +117,10 @@ namespace NicolasDorier.RateLimits
             }
         }
 
-        public LimitRequestZone LimitRequestZone { get; }
+        public LimitRequestZone LimitRequestZone
+        {
+            get;
+        }
 
         private async Task Wait()
         {

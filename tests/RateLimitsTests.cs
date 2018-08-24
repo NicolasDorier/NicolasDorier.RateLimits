@@ -253,10 +253,12 @@ namespace NicolasDorier.RateLimits.Tests
             Assert.True(throttling2.IsCompletedSuccessfully);
             Assert.Equal(1, service.BucketsCount); // Still bucket 1, because the slot used by throttling2 is still here
 
-            delay.AdvanceMilliseconds(100);
+            delay.AdvanceMilliseconds(100); // The bucket should be empty, though but wait one more period before deleting the bucket
+            Thread.Sleep(10);
             Assert.Equal(1, service.BucketsCount);
-            // The bucket get "collected" after some time
-            Thread.Sleep(limitRequestZone.RequestRate.TimePerRequest + TimeSpan.FromSeconds(0.3));
+
+            delay.AdvanceMilliseconds(100);
+            Thread.Sleep(100);
             Assert.Equal(0, service.BucketsCount);
         }
     }
