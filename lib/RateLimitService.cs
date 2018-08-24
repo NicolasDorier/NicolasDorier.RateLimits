@@ -30,13 +30,13 @@ namespace NicolasDorier.RateLimits
             {
                 if(Interlocked.Decrement(ref _RefCount) == 0)
                 {
-                    delay.Wait(Bucket.LimitRequestZone.RequestRate.TimePerRequest).ContinueWith((_, __) =>
+                    delay.Wait(Bucket.LimitRequestZone.RequestRate.TimePerRequest).ContinueWith((_) =>
                     {
                         if(Interlocked.CompareExchange(ref _RefCount, -1, 0) == 0)
                         {
                             Bucket.Close();
                         }
-                    }, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+                    }, TaskContinuationOptions.ExecuteSynchronously);
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace NicolasDorier.RateLimits
                         handle.Drain = DrainBucket(handle).ContinueWith((t) =>
                         {
                             _BucketHandles.TryRemove(bucketKey, out var unused);
-                        }, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+                        }, TaskContinuationOptions.ExecuteSynchronously);
                         break;
                     }
                 }
