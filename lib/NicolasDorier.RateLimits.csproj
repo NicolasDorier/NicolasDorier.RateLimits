@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <PackageId>NicolasDorier.RateLimits</PackageId>
+    <Description>Package for rate limiting access to your service, based on leaky bucket (https://www.nginx.com/blog/rate-limiting-nginx/)</Description>
+    <PackageProjectUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits/blob/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" />
+    <PackageReference Include="System.Threading.Channels" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
