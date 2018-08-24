@@ -1,3 +1,5 @@
+[![NuGet](https://img.shields.io/nuget/v/NicolasDorier.RateLimits.svg)](https://www.nuget.org/packages/NicolasDorier.RateLimits)
+
 # RateLimits library
 
 ## Introduction
