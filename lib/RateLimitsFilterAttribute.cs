@@ -39,7 +39,7 @@ namespace NicolasDorier.RateLimits
 
             if(!await Throttle(rateLimitService, context))
             {
-                context.Result = new TooManyRequestsObjectResult(null);
+                context.Result = new TooManyRequestsResult(ZoneName);
             }
             else
             {

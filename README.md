@@ -184,7 +184,7 @@ The you use it in your login with `RateLimitService.Throttle`:
   public async Task<IActionResult> Login(string redirectUrl, LoginViewModel vm) 
   {
       if(!await rateLimit.Throttle(ZoneLimits.Login, vm.Username.Trim()))
-        return new TooManyRequestsObjectResult();
+        return new TooManyRequestsResult(ZoneLimits.Login);
       ....
   }
 ```

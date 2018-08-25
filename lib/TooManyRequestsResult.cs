@@ -6,18 +6,20 @@ using System.Text;
 namespace NicolasDorier.RateLimits
 {
     /// <summary>
-    /// An <see cref="ObjectResult"/> that when executed will produce a Not Found (404) response.
+    /// An <see cref="ObjectResult"/> that when executed will produce a Not Found (429) response.
     /// </summary>
-    public class TooManyRequestsObjectResult : ObjectResult
+    public class TooManyRequestsResult : StatusCodeResult
     {
         /// <summary>
         /// Creates a new <see cref="NotFoundObjectResult"/> instance.
         /// </summary>
         /// <param name="value">The value to format in the entity body.</param>
-        public TooManyRequestsObjectResult(object value = null)
-            : base(null)
+        public TooManyRequestsResult(string zoneName)
+            : base(429)
         {
-            StatusCode = 429;
+            ZoneName = zoneName;
         }
+
+        public string ZoneName { get; }
     }
 }
