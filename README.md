@@ -110,16 +110,17 @@ public class ZoneLimits
     public const string Login = "login";
 }
 ```
-
+https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer
 In your `Startup.cs`:
 
-```diff
+```csharp
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 using NicolasDorier.RateLimits;
 
 namespace MyAwesomeApp
@@ -134,6 +135,14 @@ namespace MyAwesomeApp
 
         public void Configure(IApplicationBuilder app, RateLimitService rates)
         {
+            // This make sure X-Forwarded-For is taken into account
+            // See https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer
+            var forwardingOptions = new ForwardedHeadersOptions();
+            forwardingOptions.KnownNetworks.Clear();
+            forwardingOptions.KnownProxies.Clear();
+            forwardingOptions.ForwardedHeaders = ForwardedHeaders.All;
+            app.UseForwardedHeaders(forwardingOptions);
+
 +           rates.SetZone($"zone={ZoneLimits.Login} rate=10r/m burst=3 nodelay");
             app.UseMvc();
         }

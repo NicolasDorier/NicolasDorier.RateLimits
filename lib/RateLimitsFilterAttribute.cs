@@ -62,24 +62,7 @@ namespace NicolasDorier.RateLimits
                 return null;
             else if(Scope == RateLimitsScope.RemoteAddress)
             {
-                var ip = context.HttpContext.Connection.RemoteIpAddress.ToString();
-                if(context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var stringValues))
-                {
-                    var newIp = stringValues.FirstOrDefault();
-                    if(newIp != null)
-                    {
-                        ip = newIp;
-                    }
-                }
-                if(context.HttpContext.Request.Headers.TryGetValue("X-Real-Ip", out stringValues))
-                {
-                    var newIp = stringValues.FirstOrDefault();
-                    if(newIp != null)
-                    {
-                        ip = newIp;
-                    }
-                }
-                return ip;
+                return context.HttpContext.Connection.RemoteIpAddress.ToString();
             }
             else if(IsKeyableScope(Scope))
             {
