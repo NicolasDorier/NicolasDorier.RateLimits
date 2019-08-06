@@ -117,12 +117,12 @@ namespace NicolasDorier.RateLimits.Tests
                 Thread.Sleep(1100);
                 tester.Query(Limits.IpBased).AssertOk();
                 tester.Query(Limits.IpBased).AssertExceedLimits();
-                tester.Client.DefaultRequestHeaders.Add("X-Real-IP", "13.32.31.2");
+                tester.Client.DefaultRequestHeaders.Add("X-Forwarded-For", "13.32.31.2");
                 tester.Query(Limits.IpBased).AssertOk();
                 tester.Query(Limits.IpBased).AssertExceedLimits();
-                tester.Client.DefaultRequestHeaders.Remove("X-Real-IP");
-                tester.Client.DefaultRequestHeaders.Add("X-Forwarded-For", "13.32.31.2");
-                tester.Query(Limits.IpBased).AssertExceedLimits();
+                tester.Client.DefaultRequestHeaders.Remove("X-Forwarded-For");
+                tester.Client.DefaultRequestHeaders.Add("X-Forwarded-For", "13.32.31.3");
+                tester.Query(Limits.IpBased).AssertOk();
             }
         }
 

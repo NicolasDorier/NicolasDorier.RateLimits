@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -17,6 +18,11 @@ namespace NicolasDorier.RateLimits.Tests
 
         public void Configure(IApplicationBuilder app, RateLimitService service)
         {
+            var forwardingOptions = new ForwardedHeadersOptions();
+            forwardingOptions.KnownNetworks.Clear();
+            forwardingOptions.KnownProxies.Clear();
+            forwardingOptions.ForwardedHeaders = ForwardedHeaders.All;
+            app.UseForwardedHeaders(forwardingOptions);
             service.SetZone("zone=mylimit rate=10r/s");
             app.UseMvc();
         }
