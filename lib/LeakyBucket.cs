@@ -74,7 +74,7 @@ namespace NicolasDorier.RateLimits
                 }
                 else
                 {
-                    if(_CurrentWait == null || _CurrentWait.IsCompletedSuccessfully)
+                    if(_CurrentWait == null || _CurrentWait.IsCompleted)
                     {
                         _CurrentWait = Wait();
                     }
@@ -87,7 +87,7 @@ namespace NicolasDorier.RateLimits
             return !IsClosed;
         }
 
-        public bool IsClosed => _Queue.Reader.Completion.IsCompletedSuccessfully;
+        public bool IsClosed => _Queue.Reader.Completion.IsCompleted;
 
         public void Close()
         {

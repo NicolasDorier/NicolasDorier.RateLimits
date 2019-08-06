@@ -13,7 +13,7 @@ namespace NicolasDorier.RateLimits
                 throw new ArgumentNullException(nameof(str));
             requestRate = null;
             str = str.Trim();
-            var parts = str.Split("r/", StringSplitOptions.RemoveEmptyEntries);
+            var parts = str.Split(new[] { "r/" }, StringSplitOptions.RemoveEmptyEntries);
             if(parts.Length != 2)
             {
                 return false;

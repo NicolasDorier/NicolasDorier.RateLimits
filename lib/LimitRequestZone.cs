@@ -30,7 +30,7 @@ namespace NicolasDorier.RateLimits
                 throw new ArgumentNullException(nameof(str));
             limitRequestZone = null;
             str = str.Trim();
-            var parts = str.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim().ToLowerInvariant()).ToList();
+            var parts = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim().ToLowerInvariant()).ToList();
 
 
             string name = null;
@@ -44,7 +44,7 @@ namespace NicolasDorier.RateLimits
                     if (name != null)
                         return false;
                     name = p.Substring("zone=".Length);
-                    var split = name.IndexOf(':', StringComparison.OrdinalIgnoreCase);
+                    var split = name.IndexOf(":", StringComparison.OrdinalIgnoreCase);
                     if (split != -1)
                         return false;
                 }
