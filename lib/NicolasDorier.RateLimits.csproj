@@ -9,7 +9,7 @@
     <Description>Package for rate limiting access to your service, based on leaky bucket (https://www.nginx.com/blog/rate-limiting-nginx/)</Description>
     <PackageProjectUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits</PackageProjectUrl>
     <RepositoryUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/NicolasDorier/NicolasDorier.RateLimits/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
