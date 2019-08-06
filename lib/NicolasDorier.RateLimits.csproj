@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.0.0.8</Version>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    <Version>1.0.0.9</Version>
     
     <LangVersion>7.3</LangVersion>
     <PackageId>NicolasDorier.RateLimits</PackageId>
@@ -13,7 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" Condition="'$(TargetFramework)' != 'netcoreapp2.1'" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.0" Condition="'$(TargetFramework)' == 'netcoreapp2.1'" />
     <PackageReference Include="System.Threading.Channels" Version="4.5.0" />
   </ItemGroup>
 
