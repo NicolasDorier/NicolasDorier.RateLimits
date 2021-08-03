@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NicolasDorier.RateLimits
 {
@@ -33,7 +34,7 @@ namespace NicolasDorier.RateLimits
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var rateLimitService = context.HttpContext.RequestServices.GetService(typeof(RateLimitService)) as RateLimitService;
+            var rateLimitService = context.HttpContext.RequestServices.GetService<IRateLimitService>();
             if(rateLimitService == null)
                 throw new InvalidOperationException("Rate Limits not registered, please use service.AddRateLimits() in your Startup's ConfigureService method");
 
@@ -47,7 +48,7 @@ namespace NicolasDorier.RateLimits
             }
         }
 
-        private async Task<bool> Throttle(RateLimitService rateLimitService, ActionExecutingContext context)
+        private async Task<bool> Throttle(IRateLimitService rateLimitService, ActionExecutingContext context)
         {
             return await rateLimitService.Throttle(ZoneName, GetScope(context), context.HttpContext.RequestAborted);
         }
