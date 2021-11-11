@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NicolasDorier.RateLimits
 {
-    public class RateLimitService
+    public class RateLimitService : IRateLimitService
     {
         public RateLimitService(IDelay delay = null)
         {
@@ -21,18 +21,18 @@ namespace NicolasDorier.RateLimits
 
             internal bool Ref()
             {
-                if(_RefCount == -1)
+                if (_RefCount == -1)
                     return false;
                 Interlocked.Increment(ref _RefCount);
                 return true;
             }
             internal void Release(IDelay delay)
             {
-                if(Interlocked.Decrement(ref _RefCount) == 0)
+                if (Interlocked.Decrement(ref _RefCount) == 0)
                 {
                     delay.Wait(Bucket.LimitRequestZone.RequestRate.TimePerRequest).ContinueWith((_) =>
                     {
-                        if(Interlocked.CompareExchange(ref _RefCount, -1, 0) == 0)
+                        if (Interlocked.CompareExchange(ref _RefCount, -1, 0) == 0)
                         {
                             Bucket.Close();
                         }
@@ -48,16 +48,16 @@ namespace NicolasDorier.RateLimits
 
         public void SetZone(LimitRequestZone requestZone)
         {
-            if(requestZone == null)
+            if (requestZone == null)
                 throw new ArgumentNullException(nameof(requestZone));
             _Zones.AddOrUpdate(requestZone.Name, requestZone, (a, b) => requestZone);
         }
 
         public void SetZone(string requestZone)
         {
-            if(requestZone == null)
+            if (requestZone == null)
                 throw new ArgumentNullException(nameof(requestZone));
-            if(LimitRequestZone.TryParse(requestZone, out var zone))
+            if (LimitRequestZone.TryParse(requestZone, out var zone))
                 SetZone(zone);
             else
                 throw new FormatException("Invalid request zone");
@@ -73,29 +73,29 @@ namespace NicolasDorier.RateLimits
         /// <returns>A task completing when after throttling</returns>
         public async Task<bool> Throttle(string zoneName, object scope = null, CancellationToken cancellationToken = default)
         {
-            if(zoneName == null)
+            if (zoneName == null)
                 throw new ArgumentNullException(nameof(zoneName));
             zoneName = zoneName.Trim().ToLowerInvariant();
             BucketHandle handle = null;
             var bucketKey = (zoneName, scope);
 
-            while(true)
+            while (true)
             {
-                if(_BucketHandles.TryGetValue(bucketKey, out handle))
+                if (_BucketHandles.TryGetValue(bucketKey, out handle))
                 {
-                    if(handle.Ref())
+                    if (handle.Ref())
                     {
                         break;
                     }
                 }
                 else
                 {
-                    if(!_Zones.TryGetValue(zoneName, out var zone))
+                    if (!_Zones.TryGetValue(zoneName, out var zone))
                         throw new KeyNotFoundException($"{zoneName} is not found");
                     handle = new BucketHandle();
                     handle.Bucket = new LeakyBucket(zone, _Delay);
                     handle.Ref();
-                    if(_BucketHandles.TryAdd(bucketKey, handle))
+                    if (_BucketHandles.TryAdd(bucketKey, handle))
                     {
                         handle.Drain = DrainBucket(handle).ContinueWith((t) =>
                         {
@@ -111,7 +111,7 @@ namespace NicolasDorier.RateLimits
 
         private async Task DrainBucket(BucketHandle handle)
         {
-            while(await handle.Bucket.DrainNext())
+            while (await handle.Bucket.DrainNext())
             {
                 handle.Release(_Delay);
             }

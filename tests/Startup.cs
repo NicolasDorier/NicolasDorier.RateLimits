@@ -16,7 +16,7 @@ namespace NicolasDorier.RateLimits.Tests
             services.AddRateLimits();
         }
 
-        public void Configure(IApplicationBuilder app, RateLimitService service)
+        public void Configure(IApplicationBuilder app, IRateLimitService service)
         {
             var forwardingOptions = new ForwardedHeadersOptions();
             forwardingOptions.KnownNetworks.Clear();

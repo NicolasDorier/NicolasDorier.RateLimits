@@ -10,8 +10,12 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddRateLimits(this IServiceCollection services)
         {
-            var instance = new RateLimitService();
-            services.AddSingleton(instance);
+            var rateLimitService = new RateLimitService();
+
+            services.AddSingleton<RateLimitService>(rateLimitService); // for compatibility reasons
+
+            services.AddSingleton<IRateLimitService>(rateLimitService);
+
             return services;
         }
     }

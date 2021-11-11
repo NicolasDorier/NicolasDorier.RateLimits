@@ -55,12 +55,12 @@ namespace NicolasDorier.RateLimits.Tests
                     opt.ListenLocalhost(port);
                 }).UseStartup<Startup>().Build();
                 Host.Start();
-                RateLimitService = (RateLimitService)Host.Services.GetService(typeof(RateLimitService));
+                RateLimitService = Host.Services.GetService<IRateLimitService>();
                 Client = new HttpClient();
                 Client.BaseAddress = new Uri("http://localhost:" + port);
             }
 
-            public RateLimitService RateLimitService
+            public IRateLimitService RateLimitService
             {
                 get; set;
             }
