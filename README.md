@@ -193,9 +193,9 @@ The filter will throw HTTP error `429 Too Many Requests` if the user is sending 
 
 Imagine that you want to limit the rate from the login's username instead of IP address.
 
-First, you resolve the `RateLimitService` in your constructor.
+First, you resolve the `IRateLimitService` in your constructor.
 ```csharp
-RateLimitService rateLimit;
+IRateLimitService rateLimit;
 public MyController(IRateLimitService rateLimit)
 {
      this.rateLimit = rateLimit;
