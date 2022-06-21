@@ -12,7 +12,7 @@ namespace NicolasDorier.RateLimits
     /// </summary>
     public class LimitRequestZone
     {
-        public LimitRequestZone(string name, int? burst, bool nodelay, RequestRate requestRate)
+        public LimitRequestZone(string name, int? burst, bool nodelay, RequestRate requestRate, int? delay)
         {
             if (requestRate == null)
                 throw new ArgumentNullException(nameof(requestRate));
@@ -22,6 +22,7 @@ namespace NicolasDorier.RateLimits
             Burst = burst;
             NoDelay = nodelay;
             RequestRate = requestRate;
+            Delay = delay;
         }
 
         public static bool TryParse(string str, out LimitRequestZone limitRequestZone)
@@ -36,10 +37,11 @@ namespace NicolasDorier.RateLimits
             string name = null;
             int? burst = null;
             bool nodelay = false;
+            int? delay = null;
             RequestRate requestRate = null;
             foreach(var p in parts)
             {
-                if(p.StartsWith("zone=", StringComparison.OrdinalIgnoreCase))
+                if (p.StartsWith("zone=", StringComparison.OrdinalIgnoreCase))
                 {
                     if (name != null)
                         return false;
@@ -58,7 +60,7 @@ namespace NicolasDorier.RateLimits
                         return false;
                     burst = v;
                 }
-                else if(p.Equals("nodelay", StringComparison.OrdinalIgnoreCase))
+                else if (p.Equals("nodelay", StringComparison.OrdinalIgnoreCase))
                 {
                     if (nodelay)
                         return false;
@@ -72,6 +74,13 @@ namespace NicolasDorier.RateLimits
                     if (!RequestRate.TryParse(v, out requestRate))
                         return false;
                 }
+                else if (p.StartsWith("delay=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var v = p.Substring("delay=".Length);
+                    if (!int.TryParse(v, out var val))
+                        return false;
+                    delay = val;
+                }
                 else
                 {
                     return false;
@@ -79,12 +88,13 @@ namespace NicolasDorier.RateLimits
             }
             if (requestRate == null || string.IsNullOrEmpty(name))
                 return false;
-            limitRequestZone = new LimitRequestZone(name, burst, nodelay, requestRate); ;
+            limitRequestZone = new LimitRequestZone(name, burst, nodelay, requestRate, delay);
             return true;
         }
         public string Name { get; }
         public int? Burst { get; }
         public bool NoDelay { get; }
+        public int? Delay { get; set; }
         public RequestRate RequestRate { get; }
 
         public override string ToString()

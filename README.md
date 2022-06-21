@@ -58,6 +58,20 @@ If there is 4 requests in 6 seconds,
 * The third will execute immediately
 * The fourth will be dropped
 
+Now what if you want to allow 10r/m, process without delay 3 of them, then delay the rest?
+
+```
+zone=myzone rate=10r/m burst=6 delay=3
+```
+
+* The first requests will execute immediately
+* The second will execute immediately
+* The third will execute immediately
+* The fourth will be delayed
+* The fifth will be delayed
+* The sixth will be delayed
+* Then the rest will be dropped
+
 ## How to use
 
 ### Setup

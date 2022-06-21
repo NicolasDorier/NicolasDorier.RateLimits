@@ -12,7 +12,7 @@ namespace NicolasDorier.RateLimits.Tests
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
+            services.AddMvc(opts => opts.EnableEndpointRouting = false).AddApplicationPart(typeof(Startup).Assembly);
             services.AddRateLimits();
         }
 

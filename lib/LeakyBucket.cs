@@ -4,12 +4,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using TaskToProcess = System.Threading.Tasks.TaskCompletionSource<bool>;
 
 namespace NicolasDorier.RateLimits
 {
     public class LeakyBucket
     {
+        class TaskToProcess
+        {
+            public TaskToProcess(System.Threading.Tasks.TaskCompletionSource<bool> cts, int slotNumber)
+            {
+                Cts = cts;
+                SlotNumber = slotNumber;
+            }
+            public TaskCompletionSource<bool> Cts { get; }
+            public int SlotNumber { get; }
+        }
         private readonly IDelay _delay;
         private readonly Channel<TaskToProcess> _Queue;
         private readonly int _Slots;
@@ -36,15 +45,16 @@ namespace NicolasDorier.RateLimits
         public async Task<bool> Throttle()
         {
             TaskCompletionSource<bool> cts = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            int usedSlots;
             while(true)
             {
-                var usedSlots = _UsedSlots;
+                usedSlots = _UsedSlots;
                 if(Interlocked.CompareExchange(ref usedSlots, usedSlots + 1, _Slots) == _Slots)
                     return false;
                 if(Interlocked.CompareExchange(ref _UsedSlots, usedSlots + 1, usedSlots) == usedSlots)
                     break;
             }
-            if(!_Queue.Writer.TryWrite(cts))
+            if(!_Queue.Writer.TryWrite(new TaskToProcess(cts, usedSlots + 1)))
             {
                 if(IsClosed)
                 {
@@ -67,8 +77,12 @@ namespace NicolasDorier.RateLimits
             if(await _Queue.Reader.WaitToReadAsync() &&
                         _Queue.Reader.TryRead(out var req))
             {
-                req.TrySetResult(true);
-                if(!LimitRequestZone.NoDelay)
+                req.Cts.TrySetResult(true);
+
+                var wait = !LimitRequestZone.NoDelay;
+                if (wait && LimitRequestZone.Delay is int delay)
+                    wait = req.SlotNumber >= delay;
+                if (wait)
                 {
                     await Wait();
                 }

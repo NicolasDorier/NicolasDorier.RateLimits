@@ -161,6 +161,39 @@ namespace NicolasDorier.RateLimits.Tests
         }
 
         [Fact]
+        public void CanUseRateLimitWithBurstDelay()
+        {
+            Assert.True(LimitRequestZone.TryParse("zone=mylimit rate=10r/m burst=6 delay=3", out var limitRequestZone));
+            var delay = new MockDelay();
+            var queue = new LeakyBucket(limitRequestZone, delay);
+            Assert.Equal(6, queue.RemainingSlots);
+            Assert.Equal(0, queue.UsedSlots);
+
+            // 1,2,3 request should be processed immediately
+            var r1 = queue.Throttle();
+            var r2 = queue.Throttle();
+            var r3 = queue.Throttle();
+            Assert.True(queue.DrainNext().Wait(10));
+            Assert.True(queue.DrainNext().Wait(10));
+            var draining = queue.DrainNext();
+            Assert.False(draining.Wait(10));
+            Assert.True(r1.Wait(10));
+            Assert.True(r2.Wait(10));
+            Assert.True(r3.Wait(10));
+
+            //// 4,5,6 should be delayed
+            var r4 = queue.Throttle();
+            var r5 = queue.Throttle();
+            var r6 = queue.Throttle();
+            Assert.False(r4.Wait(10));
+            Assert.False(r5.Wait(10));
+            Assert.False(r6.Wait(10));
+
+            // Last kicked out!
+            Assert.False(queue.Throttle().Result);
+        }
+
+        [Fact]
         public void CanUseRateLimitWithBurstNoDelay()
         {
             Assert.True(LimitRequestZone.TryParse("zone=mylimit rate=10r/s burst=20 nodelay", out var limitRequestZone));
