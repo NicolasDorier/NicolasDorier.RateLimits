@@ -38,6 +38,7 @@ namespace NicolasDorier.RateLimits
             _Slots = burst;
         }
 
+        object l = new object();
         /// <summary>
         /// A call which will throttle requests to the service as defined by LimitRequestZone
         /// </summary>
@@ -45,16 +46,15 @@ namespace NicolasDorier.RateLimits
         public async Task<bool> Throttle()
         {
             TaskCompletionSource<bool> cts = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            int usedSlots;
-            while(true)
+            int slotNumber;
+            lock (l)
             {
-                usedSlots = _UsedSlots;
-                if(Interlocked.CompareExchange(ref usedSlots, usedSlots + 1, _Slots) == _Slots)
+                if (_UsedSlots >= _Slots)
                     return false;
-                if(Interlocked.CompareExchange(ref _UsedSlots, usedSlots + 1, usedSlots) == usedSlots)
-                    break;
+                slotNumber = _UsedSlots;
+                _UsedSlots++;
             }
-            if(!_Queue.Writer.TryWrite(new TaskToProcess(cts, usedSlots + 1)))
+            if(!_Queue.Writer.TryWrite(new TaskToProcess(cts, slotNumber)))
             {
                 if(IsClosed)
                 {
@@ -81,7 +81,7 @@ namespace NicolasDorier.RateLimits
 
                 var wait = !LimitRequestZone.NoDelay;
                 if (wait && LimitRequestZone.Delay is int delay)
-                    wait = req.SlotNumber >= delay;
+                    wait = req.SlotNumber + 1 >= delay;
                 if (wait)
                 {
                     await Wait();
@@ -119,7 +119,10 @@ namespace NicolasDorier.RateLimits
         {
             get
             {
-                return _UsedSlots;
+                lock (l)
+                {
+                    return _UsedSlots;
+                }
             }
         }
 
@@ -127,7 +130,10 @@ namespace NicolasDorier.RateLimits
         {
             get
             {
-                return _Slots - _UsedSlots;
+                lock (l)
+                {
+                    return _Slots - _UsedSlots;
+                }
             }
         }
 
@@ -139,7 +145,10 @@ namespace NicolasDorier.RateLimits
         private async Task Wait()
         {
             await _delay.Wait(_secondsPerRequest);
-            Interlocked.Decrement(ref _UsedSlots);
+            lock (l)
+            {
+                _UsedSlots--;
+            }
         }
     }
 }
