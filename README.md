@@ -196,7 +196,7 @@ Imagine that you want to limit the rate from the login's username instead of IP 
 First, you resolve the `RateLimitService` in your constructor.
 ```csharp
 RateLimitService rateLimit;
-public MyController(RateLimitService rateLimit)
+public MyController(IRateLimitService rateLimit)
 {
      this.rateLimit = rateLimit;
 }
