@@ -24,7 +24,7 @@ If you want to create a hole in the bucket to be sure that only `10 requests per
 zone=myzone rate=10r/m
 ```
 
-If you apply such zone, as explained later, then only `1 request every 6 sec` (ie, the inverse of 10 requests per minutes) will be able to be serviced.
+If you apply such zone, as explained later, then only `1 request every 6 sec` (i.e., the inverse of 10 requests per minutes) will be able to be serviced.
 
 If 3 requests are sent in 6 seconds:
 
@@ -41,9 +41,9 @@ zone=myzone rate=10r/m burst=3
 Now, if there is 4 requests in 6 seconds, 
 
 * The first requests will execute immediately
-* The second will be delayed until the 10 sec period is finished
-* The third will be delayed until the second 10 sec period is finished
-* The fourth will be dropped.
+* The second will be delayed until the 6 seconds period is finished
+* The third will be delayed until the second 6 seconds period is finished
+* The fourth will be dropped
 
 Now what if, you don't `do not want to delay` the execution, but still want to be sure about having in average 10 requests per min?
 
