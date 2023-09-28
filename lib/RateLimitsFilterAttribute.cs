@@ -1,22 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Filters;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NicolasDorier.RateLimits
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class RateLimitsFilterAttribute : Attribute, IAsyncActionFilter
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    public class RateLimitsFilterAttribute : Attribute, IAsyncActionFilter, IOrderedFilter
     {
         public RateLimitsFilterAttribute(string zoneName)
         {
             ZoneName = zoneName;
         }
+
         public string ZoneName
         {
             get; set;
@@ -28,6 +25,11 @@ namespace NicolasDorier.RateLimits
         }
 
         public string DataKey
+        {
+            get; set;
+        }
+
+        public int Order
         {
             get; set;
         }

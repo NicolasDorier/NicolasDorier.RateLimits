@@ -1,16 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using NicolasDorier.RateLimits;
-using Microsoft.AspNetCore.Builder;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Net;
-using Xunit;
 using System.Threading;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace NicolasDorier.RateLimits.Tests
 {
@@ -29,7 +24,8 @@ namespace NicolasDorier.RateLimits.Tests
 
             internal void AssertOk()
             {
-                Assert.True(client.GetAsync(address).Result.IsSuccessStatusCode);
+                var result = client.GetAsync(address).Result;
+                Assert.True(result.IsSuccessStatusCode, $"Expected result to be successful, but got {(int)result.StatusCode} back");
             }
 
             internal void AssertExceedLimits()
@@ -141,6 +137,23 @@ namespace NicolasDorier.RateLimits.Tests
                 tester.Query(Limits.ActionArgument + "?somevalue=1").AssertExceedLimits();
                 tester.Query(Limits.ActionArgument + "?somevalue=2").AssertOk();
                 tester.Query(Limits.ActionArgument + "?somevalue=2").AssertExceedLimits();
+            }
+        }
+
+        [Fact]
+        public void CanFilterBasedOnMultipleContexts()
+        {
+            using (var tester = Tester.Create())
+            {
+                tester.RateLimitService.SetZone($"zone={Limits.Global} rate=2r/s burst=2 nodelay");
+                tester.RateLimitService.SetZone($"zone={Limits.ActionArgument} rate=1r/s");
+                tester.Query(Limits.Multiple + "?somevalue=1").AssertOk();
+                tester.Query(Limits.Multiple + "?somevalue=2").AssertOk();
+                tester.Query(Limits.Multiple + "?somevalue=3").AssertExceedLimits();
+                Thread.Sleep(1100);
+                tester.Query(Limits.Multiple + "?somevalue=1").AssertOk();
+                tester.Query(Limits.Multiple + "?somevalue=2").AssertOk();
+                tester.Query(Limits.Multiple + "?somevalue=3").AssertExceedLimits();
             }
         }
     }

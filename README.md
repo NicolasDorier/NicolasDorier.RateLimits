@@ -180,7 +180,7 @@ The easiest is to apply `RateLimitsFilterAttribute` on your action.
 
 `RateLimitsScope.RemoteAddress` will use the client's IP address to apply the limit. (Or from `X-Forwarded-For`/`X-Real-IP` header if present)
 
-Available  scopes are:
+Available scopes are:
 
 * `RateLimitsScope.Global` limit rate globally.
 * `RateLimitsScope.RemoteAddress` limit rate per IP.
@@ -188,6 +188,17 @@ Available  scopes are:
 * `RateLimitsScope.ActionArgument` limit rate per Action Argument value with key specified by `RateLimitsFilterAttribute.DataKey`
 
 The filter will throw HTTP error `429 Too Many Requests` if the user is sending too much requests.
+
+It is also possible to apply multiple `RateLimitsFilterAttribute` on your action in case you need different rate limits for different scopes. Optionally, `Order` property can be specified to check limit rates in a specific order. To be processed, request needs to satisfy all limit rates.
+
+```csharp
+  [RateLimitsFilter("Global", Scope = RateLimitsScope.Global, Order = 0)]
+  [RateLimitsFilter("Login", Scope = RateLimitsScope.RemoteAddress, Order = 1)]
+  public async Task<IActionResult> Login(string redirectUrl, LoginViewModel vm) 
+  {
+      ....
+  }
+```
 
 ### Rate limits in your own code
 
