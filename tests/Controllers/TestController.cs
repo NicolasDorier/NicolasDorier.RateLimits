@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NicolasDorier.RateLimits.Tests.Controllers
 {
@@ -34,6 +31,15 @@ namespace NicolasDorier.RateLimits.Tests.Controllers
         [Route(Limits.ActionArgument)]
         [RateLimitsFilter(Limits.ActionArgument, Scope = RateLimitsScope.ActionArgument, DataKey = "somevalue")]
         public IActionResult Route(string somevalue)
+        {
+            return Ok();
+        }
+
+        [HttpGet()]
+        [Route(Limits.Multiple)]
+        [RateLimitsFilter(Limits.Global, Scope = RateLimitsScope.Global, Order = 0)]
+        [RateLimitsFilter(Limits.ActionArgument, Scope = RateLimitsScope.ActionArgument, DataKey = "somevalue", Order = 1)]
+        public IActionResult Multiple(string somevalue)
         {
             return Ok();
         }
